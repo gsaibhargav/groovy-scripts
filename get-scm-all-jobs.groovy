@@ -32,7 +32,7 @@ def getJobSCM(item){
   if(sourceControl.contains("git")){
     String git_gerrit = config.scm.userRemoteConfigs."hudson.plugins.git.UserRemoteConfig".text();
     
-    if(git_gerrit.contains("gerrit")||git_gerrit.contains("hub")){
+    if(git_gerrit.contains("gerrit")){
       gerrits=gerrits+1;
       println(git_gerrit);
       return "Gerrit";
