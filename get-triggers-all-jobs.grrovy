@@ -1,0 +1,91 @@
+def getJobSCM(item){
+
+  def configXml =  item.getConfigFile();
+  def file=configXml.getFile();
+  def StringBuilder sb= new StringBuilder();
+        
+  InputStream is =  new FileInputStream(file);
+  BufferedReader br=new BufferedReader(new InputStreamReader(is));
+      
+  String reader;
+  while((reader=br.readLine())!=null){
+    sb.append(reader);
+    }
+            
+  def config = new XmlParser().parseText(sb.toString());
+  //println(config.scm);
+  
+  String sourceControl = config.scm.@plugin;
+  //println(sourceControl);
+  
+  
+  if(sourceControl.contains("git")){
+    String git_gerrit = config.scm.userRemoteConfigs."hudson.plugins.git.UserRemoteConfig".text();
+    
+    if(git_gerrit.contains("gerrit")){
+      gerrits=gerrits+1;
+      println(git_gerrit);
+      return "Gerrit";
+    }
+    else if(git_gerrit.contains("source-")){
+      gits=gits+1;
+      println(git_gerrit);
+      return "GIT";
+    }
+    else{
+      println(git_gerrit);
+    }
+  }
+  else if(sourceControl.contains("subversion")){
+    svns=svns+1;
+    println(config.scm);
+    return "SVN";
+  }
+  else{
+    println("Different Repo/Configured Null");
+  }
+  return;
+}
+
+def getJobTrigger(item){
+  TriggerDescriptor SCM_TRIGGER_DESCRIPTOR = Hudson.instance.getDescriptorOrDie(SCMTrigger.class)
+  TriggerDescriptor GERRIT_TRIGGER_DESCRIPTOR = Hudson.instance.getDescriptorOrDie(com.sonyericsson.hudson.plugins.gerrit.trigger.hudsontrigger.GerritTrigger.class)
+  assert SCM_TRIGGER_DESCRIPTOR != null;  
+  assert GERRIT_TRIGGER_DESCRIPTOR != null;
+  
+  def trigger = item.getTriggers().get(SCM_TRIGGER_DESCRIPTOR)
+  if(trigger != null)
+  {
+    String[] parts = trigger.spec.split(" ");
+    println(parts);
+  }
+  String triggers=item.getTriggers();
+  if(triggers.contains("GerritTrigger")){
+   gerrit_triggers=gerrit_triggers+1
+   return "Gerrit"
+  }
+  if(triggers.contains("SCM")){
+    polltriggers=polltriggers+1
+    return "Polling/Timer"
+  }
+}
+
+def jobCounter(items){
+  
+  if(items!= null){
+    for(item in items){
+      jobs=jobs+1;
+      println("==================================================");
+      String sourceControl=getJobSCM(item); 
+      String trigger=getJobTrigger(item);
+      println("Job Name:\t"+item.displayName);
+      println("Source Control:\t"+sourceControl);
+      println("Job Trigger:\t"+trigger)
+    }
+   println("===================Summary=========================");
+   println("Gerrit Triggers:\t"+gerrit_triggers)
+   println("Polling/Timer Triggers:\t"+polltriggers)
+  }
+  
+}
+
