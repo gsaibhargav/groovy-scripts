@@ -1,3 +1,13 @@
+import groovy.lang.*;
+import groovy.transform.Field;
+import groovy.util.*;
+import java.io.*;
+import hudson.triggers.*;
+
+//jobCounter(Hudson.instance.items); Does not read Folders
+jobCounter(Jenkins.instance.getAllItems(AbstractProject.class));
+@Field int jobs=gits=gerrits=svns=gerrit_triggers=polltriggers=0;
+
 def getJobSCM(item){
 
   def configXml =  item.getConfigFile();
